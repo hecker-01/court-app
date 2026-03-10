@@ -14,6 +14,7 @@ import android.webkit.WebChromeClient
 import android.widget.Button
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -106,12 +107,23 @@ class MainActivity : AppCompatActivity() {
         webView.settings.setSupportZoom(true)
         webView.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         webView.settings.cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
-        webView.settings.databaseEnabled = true
+        // `databaseEnabled` is deprecated; relying on default storage behavior instead
         webView.settings.javaScriptCanOpenWindowsAutomatically = true
         
         // Set user agent to Chrome to fix Vue/SPA rendering issues
         webView.settings.userAgentString = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
         
+        // Back gesture handling using OnBackPressedDispatcher
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                } else {
+                    finish()
+                }
+            }
+        })
+
         // Load URL with headers to make it look like a real browser
         val headers = mapOf(
             "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -185,11 +197,5 @@ class MainActivity : AppCompatActivity() {
         webView.visibility = View.VISIBLE
     }
     
-    override fun onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack()
-        } else {
-            super.onBackPressed()
-        }
-    }
+
 }
